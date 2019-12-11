@@ -1,0 +1,44 @@
+---
+- name: download and execute
+  hosts: localhost
+  vars_prompt:
+
+    - name: Client_name
+      prompt: "What is your client_name?"
+      private: no
+
+    - name: Protection_groups
+      prompt: "Enter the Group name If you have multiple groups supprate them with (,)"
+      private: no
+
+    - name: user_name
+      prompt: "Enter the User name for NetWorker"
+      private: no
+
+    - name: user_password
+      prompt: "Enter the NetWorker password"
+#      private: no
+
+  tasks:
+  - include: get.yml file={{item}}
+    with_items:
+    - "atbkbkpnwk01v.th-bnk01.nxp.com"
+    - "usphx01nwbkp001v.am.freescale.net"
+#  - include: post_test.yml
+
+
+  - name: "post_test"
+    uri:
+      url: "https://{{ server_name }}:9090/nwrestapi/v3/global/protectiongroups/{{ item }}/op/updatevmwareworkitems"
+      method: POST
+      return_content: yes
+      body: { "addWorkItems": { "vCenterHostname": "{{ vCenter_host }}", "vmUuids": [ "{{ uuid_val }}" ] } }
+      body_format: json
+      validate_certs: no
+      user: "{{ user_name }}"
+      password: "{{ user_password }}"
+      force_basic_auth: yes
+      status_code: 204
+    with_items: "{{Protection_groups.split(',')}}"
+	
+	
