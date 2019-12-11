@@ -1,0 +1,60 @@
+---
+- name: Start Add Backup to client Code
+  uri:
+    url: https://{{ file }}:9090/nwrestapi/v3/global/vmware/vms?q=name:{{ Client_name }}
+    method: GET
+    content_as_json: true
+    user: "{{ user_name }}"
+    password: "{{ user_password }}"
+    force_basic_auth: yes
+    validate_certs: no
+    return_content: yes
+  register: data
+- set_fact:
+    count : "{{ data.json.count }}"
+  ignore_errors: yes
+
+- name: Start Add Backup to client Code(With Lower)
+  uri:
+    url: https://{{ file }}:9090/nwrestapi/v3/global/vmware/vms?q=name:{{ Client_name }}
+    method: GET
+    content_as_json: true
+    user: "{{ user_name }}"
+    password: "{{ user_password }}"
+    force_basic_auth: yes
+    validate_certs: no
+    return_content: yes
+  register: data
+  when: count == "1"
+
+- set_fact:
+    uuid_val: "{{ data.json.vms[0].uuid }}"
+    vCenter_host: "{{ data.json.vms[0].vCenterHostname }}"
+    count : "{{ data.json.count }}"
+    server_name : "{{ file }}"
+  ignore_errors: yes
+
+- name: Start Add Backup to client Code(With Uppercase)
+  uri:
+    url: https://{{ file }}:9090/nwrestapi/v3/global/vmware/vms?q=name:{{ Client_name|upper }}
+    method: GET
+    content_as_json: true
+    user: "{{ user_name }}"
+    password: "{{ user_password }}"
+    force_basic_auth: yes
+    validate_certs: no
+    return_content: yes
+  register: Udata
+  when: count == "0"
+
+- set_fact:
+    uuid_val: "{{ Udata.json.vms[0].uuid }}"
+    vCenter_host: "{{ Udata.json.vms[0].vCenterHostname }}"
+    count : "{{ Udata.json.count }}"
+    server_name : "{{ file }}"
+  ignore_errors: yes
+
+- debug:
+    msg: "System uuid {{ uuid_val }} of vCenter {{ vCenter_host }}"
+  ignore_errors: yes
+
